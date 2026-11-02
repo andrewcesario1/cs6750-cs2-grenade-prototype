@@ -13,23 +13,34 @@
   let helpPointer = false;
   let selectorPointer = false;
   let sceneReady = false;
+  let throwTimer;
+  let transitionTimer;
   const stage = $('stage');
-  const announce = message => { $('status').textContent = message; };
+  const announce = (message, detail = '') => {
+    $('status').textContent = [message, detail].filter(Boolean).join('. ');
+  };
   const selectedDesign = () => {
     const value = new URLSearchParams(location.search).get('design');
     return ['a', 'b', 'c'].includes(value) ? value : 'a';
   };
 
-  function render() {
-    const sceneState = state.selected === 'smoke' ? 'smoke' : state.smoke ? 'rifle' : 'used';
+  function render(animateScene = true) {
+    const throwing = state.phase === 'throwing';
+    const sceneState = throwing || state.selected === 'smoke' ? 'smoke' : state.smoke ? 'rifle' : 'used';
     const [src, alt] = views[sceneState];
     if ($('scene').getAttribute('src') !== src) {
+      clearTimeout(transitionTimer);
+      const previous = $('previous-scene');
+      previous.src = $('scene').src;
+      previous.classList.remove('fade-away');
+      previous.hidden = !animateScene || !sceneReady;
+      if (!previous.hidden) previous.getBoundingClientRect();
       sceneReady = false;
       $('scene').src = src;
     }
     $('scene').alt = alt;
     stage.dataset.selected = state.selected;
-    stage.dataset.state = sceneState;
+    stage.dataset.state = throwing ? 'throwing' : sceneState;
     stage.dataset.design = state.design;
     document.title = `CS2 · Prototype ${state.design.toUpperCase()}`;
     document.querySelectorAll('[data-design]').forEach(link => {
@@ -38,9 +49,13 @@
     });
     $('rifle').setAttribute('aria-pressed', String(state.selected === 'rifle'));
     $('smoke').setAttribute('aria-pressed', String(state.selected === 'smoke'));
-    $('smoke').disabled = state.smoke === 0;
+    $('smoke').disabled = state.smoke === 0 || throwing;
+    $('rifle').disabled = throwing;
     $('smoke-count').textContent = state.smoke;
-    $('equipment-state').textContent = state.selected === 'smoke' ? 'Smoke equipped' : 'Rifle equipped';
+    $('equipment-state').textContent = throwing ? 'Throwing smoke' : state.selected === 'smoke' ? 'Smoke equipped' : 'Rifle equipped';
+    $('throw').hidden = state.selected !== 'smoke' || throwing || !state.smoke || hold4 || selectorPointer;
+    const sceneLabel = throwing ? 'Scene: throwing smoke…' : sceneState === 'used' ? 'Scene: smoke thrown' : sceneState === 'smoke' ? 'Scene: smoke selected' : 'Scene: rifle held';
+    if ($('scene-status').textContent !== sceneLabel) $('scene-status').textContent = sceneLabel;
     $('prompt').hidden = !(state.design === 'b' && state.smoke && !state.dismissed);
     $('help-hint').hidden = !(state.design === 'c' && state.smoke);
     $('help').hidden = !(state.design === 'c' && state.smoke && (helpKey || helpPointer));
@@ -51,40 +66,56 @@
     $('selector-count').textContent = state.smoke;
     const footer = $('inventory-footer');
     footer.classList.toggle('used', state.smoke === 0);
-    footer.innerHTML = state.smoke === 0 ? 'Smoke used' : state.selected === 'smoke' ? 'Click scene to throw · <kbd>1</kbd> Rifle' : 'Hold <kbd>4</kbd> to select';
+    footer.innerHTML = throwing ? 'Throwing smoke…' : state.smoke === 0 ? 'Smoke thrown · None left' : state.selected === 'smoke' ? 'Click to throw · <kbd>1</kbd> to keep' : 'Hold <kbd>4</kbd> to select';
   }
 
   function clearHeld() {
+    const wasSelecting = hold4 || selectorPointer;
     hold4 = false; helpKey = false; helpPointer = false; selectorPointer = false;
     render();
+    if (wasSelecting) announce('Selection cancelled', state.selected === 'smoke' ? 'Smoke still equipped' : 'Rifle still equipped');
   }
   function reset(design = state?.design || selectedDesign()) {
-    state = { design, selected: 'rifle', smoke: 1, dismissed: false };
+    const firstLoad = !state;
+    clearTimeout(throwTimer); clearTimeout(transitionTimer);
+    $('previous-scene').hidden = true;
+    state = { design, selected: 'rifle', smoke: 1, dismissed: false, phase: 'idle' };
     hold4 = false; helpKey = false; helpPointer = false; selectorPointer = false;
-    render();
-    announce(`Prototype ${design.toUpperCase()} reset. Rifle equipped. One smoke available.`);
+    render(false);
+    if (!firstLoad) announce('Scene reset', 'Rifle equipped · 1 smoke available');
   }
   function equipSmoke() {
-    if (!state.smoke) return;
+    if (!state.smoke || state.phase === 'throwing') return;
     state.selected = 'smoke'; hold4 = false; selectorPointer = false;
-    render(); announce('Smoke equipped.');
+    render(); announce('Smoke equipped', 'Click to throw · Press 1 to keep it', 0);
   }
   function equipRifle() {
+    if (state.phase === 'throwing') return;
     state.selected = 'rifle'; hold4 = false; selectorPointer = false;
-    render(); announce('Rifle equipped.');
+    render(); announce('Rifle equipped', state.smoke ? 'Smoke kept · 1 available' : 'No smoke remaining');
   }
   function dismiss() {
-    if (state.design !== 'b') return;
-    state.dismissed = true; render(); announce('Prompt dismissed.');
+    if (state.design !== 'b' || !state.smoke || state.phase === 'throwing') return;
+    if (state.dismissed) return;
+    state.dismissed = true; render(); announce('Prompt dismissed', 'Your equipment is unchanged');
   }
   function throwSmoke() {
-    if (!sceneReady || !state.smoke || state.selected !== 'smoke' || hold4 || selectorPointer) return;
-    state.smoke = 0; state.selected = 'rifle';
+    if (!sceneReady || !state.smoke || state.phase === 'throwing' || state.selected !== 'smoke' || hold4 || selectorPointer) return;
+    state.smoke = 0; state.phase = 'throwing';
     helpKey = false; helpPointer = false;
-    render(); announce('Smoke used. Rifle equipped.');
+    render(); announce('Throwing smoke…', 'Smoke released · 0 remaining', 0);
+    throwTimer = setTimeout(() => {
+      state.phase = 'idle'; state.selected = 'rifle';
+      render(); announce('Smoke thrown', '1 → 0 smoke · Rifle re-equipped', 4500);
+    }, 900);
   }
 
-  $('scene').addEventListener('load', () => { sceneReady = true; $('image-error').hidden = true; });
+  $('scene').addEventListener('load', () => {
+    sceneReady = true; $('image-error').hidden = true;
+    $('previous-scene').classList.add('fade-away');
+    clearTimeout(transitionTimer);
+    transitionTimer = setTimeout(() => { $('previous-scene').hidden = true; }, 420);
+  });
   $('scene').addEventListener('error', () => { sceneReady = false; $('image-error').hidden = false; });
   $('reset').addEventListener('click', () => { reset(); stage.focus({ preventScroll: true }); });
   document.querySelectorAll('[data-design]').forEach(link => link.addEventListener('click', event => {
@@ -96,9 +127,14 @@
   }));
   window.addEventListener('popstate', () => reset(selectedDesign()));
   $('rifle').addEventListener('click', equipRifle);
-  $('smoke').addEventListener('click', () => { selectorPointer = !selectorPointer; hold4 = false; render(); });
+  $('smoke').addEventListener('click', () => {
+    selectorPointer = !selectorPointer; hold4 = false; render();
+    if (selectorPointer) announce('Choose a grenade', 'Choose Smoke below · Esc to cancel', 0);
+    else announce('Selection cancelled', state.selected === 'smoke' ? 'Smoke still equipped' : 'Rifle still equipped');
+  });
   $('choose-smoke').addEventListener('click', equipSmoke);
-  $('cancel').addEventListener('click', clearHeld);
+  $('cancel').addEventListener('click', () => { clearHeld(); announce('Selection cancelled', state.selected === 'smoke' ? 'Smoke still equipped' : 'Rifle still equipped'); });
+  $('throw').addEventListener('click', throwSmoke);
   $('dismiss').addEventListener('click', dismiss);
   $('help-hint').addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
@@ -119,11 +155,15 @@
     if (event.ctrlKey || event.metaKey || event.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
     if (event.code === 'Digit4') {
       event.preventDefault(); if (event.repeat) return;
+      if (state.phase === 'throwing') return;
       hold4 = true; selectorPointer = false; render();
+      announce(state.smoke ? 'Choose a grenade' : 'No grenades left', state.smoke ? 'Release 4 to equip smoke · Esc to cancel' : 'Reset to try again', 0);
     } else if (event.code === 'Digit1') {
       event.preventDefault(); equipRifle();
     } else if (event.code === 'Escape') {
+      const wasSelecting = hold4 || selectorPointer;
       clearHeld();
+      if (wasSelecting) announce('Selection cancelled', state.selected === 'smoke' ? 'Smoke still equipped' : 'Rifle still equipped');
     } else if (event.code === 'KeyV') {
       if (state.design === 'a') return;
       event.preventDefault();
@@ -134,7 +174,7 @@
   document.addEventListener('keyup', event => {
     if (event.code === 'Digit4' && hold4) {
       hold4 = false;
-      if (state.smoke) equipSmoke(); else render();
+      if (state.smoke) equipSmoke(); else { render(); announce('No grenades left', 'Reset to try again'); }
     }
     if (event.code === 'KeyV') { helpKey = false; render(); }
   });

@@ -17,11 +17,14 @@
       <a href="?design=b" data-design="b" aria-label="Prototype B">B</a>
       <a href="?design=c" data-design="c" aria-label="Prototype C">C</a>
     </nav>
-    <button id="reset" class="reset" type="button">Reset <span aria-hidden="true">↺</span></button>
+    <span id="scene-status" class="scene-status" role="status">Scene: rifle held</span>
+    <button id="throw" class="throw-button" type="button" hidden>Throw smoke</button>
+    <button id="reset" class="reset" type="button">Reset</button>
   </header>
   <main>
     <div class="stage" id="stage" tabindex="0" role="region" aria-label="Interactive CS2 scene. Select smoke using 4 or the inventory. With smoke equipped, click the scene to use it. Press 1 to return to the rifle.">
       <img id="scene" src="assets/survey-route.jpg" alt="Dust II Long A, rifle equipped, with an exposed route ahead." draggable="false">
+      <img id="previous-scene" alt="" aria-hidden="true" draggable="false" hidden>
       <div class="image-error" id="image-error" role="alert" hidden>Could not load the scene. Reload the page to try again.</div>
 
       <aside class="advice" id="prompt" aria-label="Situation prompt" hidden>
@@ -39,7 +42,7 @@
 
       <aside class="selector" id="selector" aria-label="Grenade selection" hidden>
         <div class="selector-heading"><span>Grenades</span><kbd>4</kbd></div>
-        <button id="choose-smoke" class="grenade-choice" type="button"><svg aria-hidden="true"><use href="#icon-smoke"/></svg><span>Smoke</span><span id="selector-count">1</span></button>
+        <button id="choose-smoke" class="grenade-choice" type="button"><span>Smoke</span><span id="selector-count">1</span></button>
         <p class="selector-empty" id="selector-empty" hidden>No grenades available</p>
         <p class="selector-instructions">Scroll to choose · Release <kbd>4</kbd> to equip</p>
         <button id="cancel" class="key-action" type="button"><kbd>Esc</kbd> Cancel</button>
@@ -47,21 +50,15 @@
 
       <section class="inventory" aria-label="Carried equipment">
         <div class="inventory-heading"><span>Equipment</span><span id="equipment-state">Rifle equipped</span></div>
-        <button id="rifle" class="equipment-row" type="button" aria-label="Equip rifle" aria-pressed="true"><kbd>1</kbd><svg aria-hidden="true"><use href="#icon-rifle"/></svg><span class="item-label">AK-47</span><span class="item-detail">30 / 3</span></button>
-        <div class="equipment-row passive" aria-label="Pistol, carried; display only"><span class="slot">2</span><svg aria-hidden="true"><use href="#icon-pistol"/></svg><span class="item-label">Pistol</span></div>
-        <div class="equipment-row passive" aria-label="Knife, carried; display only"><span class="slot">3</span><svg aria-hidden="true"><use href="#icon-knife"/></svg><span class="item-label">Knife</span></div>
-        <button id="smoke" class="equipment-row" type="button" aria-label="Equip smoke grenade" aria-pressed="false"><kbd>4</kbd><svg aria-hidden="true"><use href="#icon-smoke"/></svg><span class="item-label">Smoke</span><span class="item-detail" id="smoke-count">1</span></button>
+        <button id="rifle" class="equipment-row" type="button" aria-label="Equip rifle" aria-pressed="true"><kbd>1</kbd><span class="item-label">AK-47</span><span class="item-detail">30 / 3</span></button>
+        <div class="equipment-row passive" aria-label="Pistol, carried; display only"><span class="slot">2</span><span class="item-label">Pistol</span></div>
+        <div class="equipment-row passive" aria-label="Knife, carried; display only"><span class="slot">3</span><span class="item-label">Knife</span></div>
+        <button id="smoke" class="equipment-row" type="button" aria-label="Equip smoke grenade" aria-pressed="false"><kbd>4</kbd><span class="item-label">Smoke</span><span class="item-detail" id="smoke-count">1</span></button>
         <div class="inventory-footer" id="inventory-footer">Hold <kbd>4</kbd> to select</div>
       </section>
     </div>
     <p class="desktop-note">Use a computer with a keyboard and a larger window to try this prototype.</p>
   </main>
   <p id="status" class="sr-only" role="status" aria-live="polite"></p>
-  <svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="icon-rifle" viewBox="0 0 72 32"><path d="M3 12h12l4-4h26v3h19v3h6v3H47l-3 5-8-2-4 9h-8l3-12H15L4 23z"/><path d="M48 8h4v4h-4z"/></symbol>
-    <symbol id="icon-pistol" viewBox="0 0 72 32"><path d="M13 6h48v9H38l-5 14H20l4-14H13z"/></symbol>
-    <symbol id="icon-knife" viewBox="0 0 72 32"><path d="M4 17h21v-5h5v4l38-5c-6 9-22 12-38 10v6h-5v-6H4z"/></symbol>
-    <symbol id="icon-smoke" viewBox="0 0 72 32"><path d="M31 3h10v5h4v21H27V8h4zM40 3h7l4 9-3 1-4-7h-4z"/><path d="M29 12h14v3H29z" fill="var(--panel)"/></symbol>
-  </svg>
 </body>
 </html>
