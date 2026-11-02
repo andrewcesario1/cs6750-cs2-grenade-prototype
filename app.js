@@ -34,6 +34,7 @@
       previous.src = $('scene').src;
       previous.classList.remove('fade-away');
       previous.hidden = !animateScene || !sceneReady;
+      // Commit the starting opacity before the next image starts its crossfade.
       if (!previous.hidden) previous.getBoundingClientRect();
       sceneReady = false;
       $('scene').src = src;
@@ -87,7 +88,7 @@
   function equipSmoke() {
     if (!state.smoke || state.phase === 'throwing') return;
     state.selected = 'smoke'; hold4 = false; selectorPointer = false;
-    render(); announce('Smoke equipped', 'Click to throw · Press 1 to keep it', 0);
+    render(); announce('Smoke equipped', 'Click to throw · Press 1 to keep it');
   }
   function equipRifle() {
     if (state.phase === 'throwing') return;
@@ -103,10 +104,10 @@
     if (!sceneReady || !state.smoke || state.phase === 'throwing' || state.selected !== 'smoke' || hold4 || selectorPointer) return;
     state.smoke = 0; state.phase = 'throwing';
     helpKey = false; helpPointer = false;
-    render(); announce('Throwing smoke…', 'Smoke released · 0 remaining', 0);
+    render(); announce('Throwing smoke…', 'Smoke released · 0 remaining');
     throwTimer = setTimeout(() => {
       state.phase = 'idle'; state.selected = 'rifle';
-      render(); announce('Smoke thrown', '1 → 0 smoke · Rifle re-equipped', 4500);
+      render(); announce('Smoke thrown', '1 → 0 smoke · Rifle re-equipped');
     }, 900);
   }
 
@@ -129,7 +130,7 @@
   $('rifle').addEventListener('click', equipRifle);
   $('smoke').addEventListener('click', () => {
     selectorPointer = !selectorPointer; hold4 = false; render();
-    if (selectorPointer) announce('Choose a grenade', 'Choose Smoke below · Esc to cancel', 0);
+    if (selectorPointer) announce('Choose a grenade', 'Choose Smoke below · Esc to cancel');
     else announce('Selection cancelled', state.selected === 'smoke' ? 'Smoke still equipped' : 'Rifle still equipped');
   });
   $('choose-smoke').addEventListener('click', equipSmoke);
@@ -149,7 +150,7 @@
   stage.addEventListener('wheel', event => {
     if (!hold4 && !selectorPointer) return;
     event.preventDefault();
-    // This scenario carries one grenade. Scrolling retains its only available choice.
+    // Suppress page scrolling while the single-item grenade menu is open.
   }, { passive: false });
   document.addEventListener('keydown', event => {
     if (event.ctrlKey || event.metaKey || event.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
@@ -157,7 +158,7 @@
       event.preventDefault(); if (event.repeat) return;
       if (state.phase === 'throwing') return;
       hold4 = true; selectorPointer = false; render();
-      announce(state.smoke ? 'Choose a grenade' : 'No grenades left', state.smoke ? 'Release 4 to equip smoke · Esc to cancel' : 'Reset to try again', 0);
+      announce(state.smoke ? 'Choose a grenade' : 'No grenades left', state.smoke ? 'Release 4 to equip smoke · Esc to cancel' : 'Reset to try again');
     } else if (event.code === 'Digit1') {
       event.preventDefault(); equipRifle();
     } else if (event.code === 'Escape') {
