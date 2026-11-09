@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>CS2 · Final prototype</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="toolbar">
+    <span class="identity">CS2 <span class="divider">/</span> <span>Final prototype</span></span>
+    <label class="help-setting"><input id="help-enabled" type="checkbox" checked> Context cue</label>
+    <details class="controls"><summary>Controls</summary><p>Move the pointer over the scene to aim, or use arrow keys. Hold 4 and release to equip; Esc cancels. Press 1 to keep the smoke. Click the scene or Throw smoke to use it. This is a scripted scene. The inventory cue suggests considering a smoke; it does not choose a play.</p></details>
+    <span id="scene-status" class="scene-status" role="status">Scene: rifle held</span>
+    <button id="throw" class="throw-button" type="button" hidden>Throw smoke</button>
+    <button id="reset" class="reset" type="button">Reset</button>
+  </header>
+  <main>
+    <div class="stage" id="stage" tabindex="0" role="region" aria-label="Interactive CS2 scene. Move the pointer or arrow keys to aim. Select smoke using 4 or the inventory. With smoke equipped, click the scene to use it. Press 1 to return to the rifle.">
+      <img id="scene" src="assets/survey-route.jpg" alt="Dust II Long A, rifle equipped, with an exposed route ahead." draggable="false">
+      <img id="previous-scene" alt="" aria-hidden="true" draggable="false" hidden>
+      <div class="image-error" id="image-error" role="alert" hidden>Could not load the scene. Reload the page to try again.</div>
+
+      <div id="aim" class="aim" aria-hidden="true"></div>
+      <aside class="selector" id="selector" aria-label="Grenade selection" hidden>
+        <div class="selector-heading"><span>Grenades</span><kbd>4</kbd></div>
+        <button id="choose-smoke" class="grenade-choice" type="button"><span>Smoke</span><span id="selector-count">1</span></button>
+        <p class="selector-empty" id="selector-empty" hidden>No grenades available</p>
+        <p class="selector-instructions">Scroll to choose · Release <kbd>4</kbd> to equip</p>
+        <button id="cancel" class="key-action" type="button"><kbd>Esc</kbd> Cancel</button>
+      </aside>
+
+      <section class="inventory" aria-label="Carried equipment">
+        <div class="inventory-heading"><span>Equipment</span><span id="equipment-state">Rifle equipped</span></div>
+        <button id="rifle" class="equipment-row" type="button" aria-label="Equip rifle" aria-pressed="true"><kbd>1</kbd><span class="item-label">AK-47</span><span class="item-detail">30 / 3</span></button>
+        <div class="equipment-row passive" aria-label="Pistol, carried; display only"><span class="slot">2</span><span class="item-label">Pistol</span></div>
+        <div class="equipment-row passive" aria-label="Knife, carried; display only"><span class="slot">3</span><span class="item-label">Knife</span></div>
+        <button id="smoke" class="equipment-row" type="button" aria-label="Equip smoke grenade" aria-pressed="false"><kbd>4</kbd><span class="item-label">Smoke</span><span class="item-detail" id="smoke-count">1</span></button>
+        <div class="inventory-footer" id="inventory-footer">Hold <kbd>4</kbd> to select</div>
+      </section>
+    </div>
+    <p class="desktop-note">Use a computer with a keyboard and a larger window to try this prototype.</p>
+  </main>
+  <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+</body>
+</html>
