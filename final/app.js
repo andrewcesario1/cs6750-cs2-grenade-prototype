@@ -20,6 +20,7 @@
     $('smoke').classList.toggle('context-cue', relevant);
     $('smoke').setAttribute('aria-description', relevant ? 'Smoke may be relevant to this sightline.' : '');
     stage.dataset.cue = relevant ? 'on' : 'off';
+    $('quick-off').hidden = !relevant;
     $('aim').style.left = `${aim.x * 100}%`;
     $('aim').style.top = `${aim.y * 100}%`;
     $('aim').hidden = phase === 'throwing' || selecting;
@@ -79,12 +80,16 @@
     cue();
   });
   $('scene').addEventListener('error', () => { ready = false; $('image-error').hidden = false; cue(); });
-  $('help-enabled').addEventListener('change', event => { enabled = event.target.checked; render(); announce(enabled ? 'Context cue enabled' : 'Context cue disabled'); });
+  function setAssistance(value) { enabled=value; $('assistance').value=value?'on':'off'; render(); announce(value?'Assistance on':'Assistance off'); }
+  function openSettings() { if(!$('settings').open) $('settings').showModal(); }
+  $('settings-open').addEventListener('click', openSettings);
+  $('settings-close').addEventListener('click', () => { $('settings').close(); stage.focus(); });
+  $('assistance').addEventListener('change', e => setAssistance(e.target.value==='on'));
   $('reset').addEventListener('click', () => { reset(); stage.focus({preventScroll:true}); });
   $('rifle').addEventListener('click', () => equip('rifle'));
   $('smoke').addEventListener('click', () => { selecting = !selecting; held4 = false; render(); });
   $('choose-smoke').addEventListener('click', () => equip('smoke'));
-  $('cancel').addEventListener('click', clearHeld);
+  
   $('throw').addEventListener('click', throwSmoke);
   stage.addEventListener('pointermove', event => {
     if (event.target !== stage && event.target !== $('scene')) return;
@@ -94,6 +99,9 @@
   stage.addEventListener('click', event => { if(event.target !== stage && event.target !== $('scene')) return; stage.focus({preventScroll:true}); throwSmoke(); });
   stage.addEventListener('wheel', event => { if(selecting) event.preventDefault(); }, {passive:false});
   document.addEventListener('keydown', event => {
+    if(event.code==='Escape') { if(!$('settings').open) { event.preventDefault(); openSettings(); } return; }
+    if($('settings').open) return;
+    if(event.code==='KeyK' && !event.ctrlKey && !event.metaKey && !event.altKey) { setAssistance(false); return; }
     if(event.ctrlKey || event.metaKey || event.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
     if(event.code.startsWith('Arrow') && (event.target === stage || event.target === document.body)) {
       event.preventDefault();
@@ -102,7 +110,7 @@
     } else if(event.code==='Digit4') {
       event.preventDefault(); if(event.repeat || phase==='throwing') return; selecting = held4 = true; render();
     } else if(event.code==='Digit1') { event.preventDefault(); equip('rifle'); }
-    else if(event.code==='Escape') { event.preventDefault(); clearHeld(); }
+    
   });
   document.addEventListener('keyup', event => {
     if(event.code==='Digit4' && held4) { held4 = selecting = false; if(count) equip('smoke'); else render(); }

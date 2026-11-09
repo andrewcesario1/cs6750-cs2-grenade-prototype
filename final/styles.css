@@ -593,3 +593,12 @@ kbd {
 .controls p { position:absolute; top:20px; left:0; width:300px; padding:14px; background:#252525; border:1px solid #777; line-height:1.5; z-index:20; }
 .stage { cursor:crosshair; }
 @media(max-width:650px) { .controls { font-size:10px; } .controls p { left:-100px; width:250px; } }
+
+.settings-open {position:absolute;right:1%;top:2%;background:#252525;color:#ddd;padding:8px;display:grid;place-items:center;}
+#settings {background:#292929;color:#eee;border:1px solid #777;max-width:360px;padding:24px;font:14px Arial;}
+#settings::backdrop {background:#0007;}
+#settings h2 {font-size:18px;margin-top:0;}
+#settings p {line-height:1.5;color:#bbb;}
+#settings select,#settings button {background:#444;color:#eee;padding:8px;border:1px solid #777;}
+#settings-close {float:right;}
+.quick-off {position:absolute;right:1%;bottom:31.5%;background:#252525dd;padding:.5cqw;color:#ddd;font-size:.8cqw;}

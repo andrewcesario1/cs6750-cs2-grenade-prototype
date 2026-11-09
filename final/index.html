@@ -12,8 +12,8 @@
 <body>
   <header class="toolbar">
     <span class="identity">CS2 <span class="divider">/</span> <span>Final prototype</span></span>
-    <label class="help-setting"><input id="help-enabled" type="checkbox" checked> Context cue</label>
-    <details class="controls"><summary>Controls</summary><p>Move the pointer over the scene to aim, or use arrow keys. Hold 4 and release to equip; Esc cancels. Press 1 to keep the smoke. Click the scene or Throw smoke to use it. This is a scripted scene. The inventory cue suggests considering a smoke; it does not choose a play.</p></details>
+    
+    <details class="controls"><summary>Controls</summary><p>Move the pointer over the scene to aim, or use arrow keys. Hold 4 and release to equip; Esc opens settings. Press 1 to keep the smoke. Click the scene or Throw smoke to use it. This is a scripted scene. The inventory cue suggests considering a smoke; it does not choose a play.</p></details>
     <span id="scene-status" class="scene-status" role="status">Scene: rifle held</span>
     <button id="throw" class="throw-button" type="button" hidden>Throw smoke</button>
     <button id="reset" class="reset" type="button">Reset</button>
@@ -24,13 +24,16 @@
       <img id="previous-scene" alt="" aria-hidden="true" draggable="false" hidden>
       <div class="image-error" id="image-error" role="alert" hidden>Could not load the scene. Reload the page to try again.</div>
 
+      <button id="settings-open" class="settings-open" aria-label="Settings" title="Settings (Esc)"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1z"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+      <dialog id="settings"><h2>Settings</h2><label for="assistance">Smoke assistance</label><p>Highlight your smoke when aiming toward an exposed angle. This is a suggestion, not a safe-throw guarantee.</p><select id="assistance"><option value="on">On</option><option value="off">Off</option></select><button id="settings-close">Done</button></dialog>
+      <div id="quick-off" class="quick-off" hidden>Press <kbd>K</kbd> to turn off assistance</div>
       <div id="aim" class="aim" aria-hidden="true"></div>
       <aside class="selector" id="selector" aria-label="Grenade selection" hidden>
         <div class="selector-heading"><span>Grenades</span><kbd>4</kbd></div>
         <button id="choose-smoke" class="grenade-choice" type="button"><span>Smoke</span><span id="selector-count">1</span></button>
         <p class="selector-empty" id="selector-empty" hidden>No grenades available</p>
         <p class="selector-instructions">Scroll to choose · Release <kbd>4</kbd> to equip</p>
-        <button id="cancel" class="key-action" type="button"><kbd>Esc</kbd> Cancel</button>
+        
       </aside>
 
       <section class="inventory" aria-label="Carried equipment">
